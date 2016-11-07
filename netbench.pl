@@ -35,7 +35,7 @@ main();
 sub do_download() {
     my $before = time();
 
-    system("/usr/bin/siege --log=/dev/null -c 10 -b -t20s " . URL_DN . ">/dev/null 2>&1");
+    system("/usr/bin/siege --log=/dev/null -c 6 -b -t20s " . URL_DN . " >/dev/null 2>&1");
 
     my $after = time();
 
