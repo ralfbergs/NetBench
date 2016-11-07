@@ -20,8 +20,8 @@ use constant DEBUG => 0;
 use constant RX_BYTES_URL => "http://gw.gv.internal.bergs.biz/cgi-bin/get-rx-bytes.sh";
 use constant TX_BYTES_URL => "http://gw.gv.internal.bergs.biz/cgi-bin/get-tx-bytes.sh";
 
-use constant URL_DN => "http://www.speedcheck.vodafone.de/speedtest/random2000x2000.jpg";
-use constant URL_UP => "http://www.speedcheck.vodafone.de/speedtest/upload.php";
+use constant URL_DN => "http://speedcheck.vodafone.de/speedtest/random4000x4000.jpg";
+use constant URL_UP => "http://speedcheck.vodafone.de/speedtest/upload.php";
 
 use constant RRD_FILENAME => "/var/lib/rrd/netbench/netbench.rrd";
 
@@ -35,11 +35,7 @@ main();
 sub do_download() {
     my $before = time();
 
-    # Download dummy file twice, in two parallel threads
-    my $thr1 = threads->create(sub { get(URL_DN . '?y=1'); });
-    my $thr2 = threads->create(sub { get(URL_DN . '?y=2'); });
-    $thr1->join();
-    $thr2->join();
+    system("/usr/bin/siege --log=/dev/null -c 10 -b -t20s " . URL_DN . ">/dev/null 2>&1");
 
     my $after = time();
 
@@ -48,20 +44,14 @@ sub do_download() {
 }
 
 sub do_upload() {
-    my $payload = rnd_str 54784, 'A'..'Z';
+    my $payload = rnd_str 3000000, 'A'..'Z';
 
     my $ua = LWP::UserAgent->new;
     $ua->timeout(10);
 
     my $b4 = time();
-    my $thr1 = threads->create(sub { my $response = $ua->post(URL_UP, Content_Type => 'application/x-www-form-urlencoded',
-							      Content => [content0 => $payload, content1 => $payload,
-									  content2 => $payload, content3 => $payload]);});
-    my $thr2 = threads->create(sub { my $response = $ua->post(URL_UP, Content_Type => 'application/x-www-form-urlencoded',
-							      Content => [content0 => $payload, content1 => $payload,
-									  content2 => $payload, content3 => $payload]);});
-    $thr1->join();
-    $thr2->join();
+
+    system("/usr/bin/siege --log=/dev/null -c 6 -b -t20s \"" . URL_UP . " POST </root/binfile3m.bin\" >/dev/null 2>&1");
 
     my $aftr = time();
 
