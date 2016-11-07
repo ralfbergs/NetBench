@@ -5,12 +5,6 @@ use Config;
 use Time::HiRes qw ( time );
 use LockFile::Simple qw(unlock trylock);
 use File::Basename;
-use LWP::Simple;
-use threads ('yield',
-	     'stack_size' => 64*4096,
-	     'exit' => 'threads_only',
-	     'stringify');
-use LWP::UserAgent;
 use RRDs;
 
 
@@ -45,9 +39,6 @@ sub do_download() {
 
 sub do_upload() {
     my $payload = rnd_str 3000000, 'A'..'Z';
-
-    my $ua = LWP::UserAgent->new;
-    $ua->timeout(10);
 
     my $b4 = time();
 
